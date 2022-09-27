@@ -1,41 +1,45 @@
 import express from "express";
 import childProcess from "child_process";
-import { renderToString } from 'react-dom/server'
-import { Route, Routes } from 'react-router-dom'
-import { StaticRouter } from 'react-router-dom/server'
+import { renderToString } from "react-dom/server";
+import { Route, Routes } from "react-router-dom";
+import { StaticRouter } from "react-router-dom/server";
 import { Helmet } from "react-helmet";
-import path from 'path'
-import routers from '@/router'
+import path from "path";
+import { Provider } from "react-redux";
+import routers from "@/router";
+import { serverStore } from "@/store";
 
-const bodyParser = require('body-parser')
+const bodyParser = require("body-parser");
 const app = express();
 
-app.use(express.static(path.resolve(process.cwd(), "client_build")))
+app.use(express.static(path.resolve(process.cwd(), "client_build")));
 
 // 请求body解析
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // 启动一个post服务
 app.post("/api/getDemoData", (req, res) => {
-  res.send({
-    data: req.body,
-    status_code: 0,
-  })
-})
+  setTimeout(() => {
+    res.send({
+      data: req.body,
+      status_code: 0,
+    });
+  }, 1000)
+});
 
 app.get("*", (req, res) => {
   const content = renderToString(
-    <StaticRouter location={req.path}>
-      <Routes>
-        {
-          routers?.map((item, index) => {
-            return <Route {...item} key={index} />
-          })
-        }
-      </Routes>
-    </StaticRouter>
-  )
+    <Provider store={serverStore}>
+      <StaticRouter location={req.path}>
+        <Routes>
+          {routers?.map((item, index) => {
+            return <Route {...item} key={index} />;
+          })}
+        </Routes>
+      </StaticRouter>{" "}
+    </Provider>
+  );
 
   const helmet = Helmet.renderStatic();
   res.send(`

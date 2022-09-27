@@ -1,18 +1,14 @@
-import { FC, Fragment, useEffect, useState } from "react";
+import { FC, Fragment } from "react";
 import { Helmet } from "react-helmet";
-import axios from "axios";
+import { connect } from "react-redux";
+import { getDemoData } from "@/store/demoReducer";
 
-const Demo: FC = () => {
-  const [content, setContent] = useState("");
+interface IProps {
+  content?: string;
+  getDemoData?: (data: string) => void;
+}
 
-  useEffect(() => {
-    axios.post("/api/getDemoData", {
-      content: "这是一个Demo页面",
-    }).then(res => {
-      setContent(res?.data?.data?.content)
-    })
-  }, []);
-
+const Demo: FC<IProps> = ({ content, getDemoData }) => {
   return (
     <Fragment>
       <Helmet>
@@ -24,8 +20,29 @@ const Demo: FC = () => {
       </div>
 
       <div>content： {content}</div>
+      <button
+        onClick={() => {
+          getDemoData && getDemoData("刷新过后的数据");
+        }}
+      >
+        刷新
+      </button>
     </Fragment>
   );
 };
 
-export default Demo;
+const mapStateToProps = (state: any) => {
+  return {
+    content: state?.demo?.content,
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    getDemoData: (data: string) => {
+      dispatch(getDemoData());
+    },
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Demo);
