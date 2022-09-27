@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Home from "@/pages/Home";
 import Demo from "@/pages/Demo";
 
 interface IRouter {
   path: string;
   element: JSX.Element;
+  loadData?: (store: any) => any;
 }
 
 const router: Array<IRouter> = [
@@ -14,6 +16,7 @@ const router: Array<IRouter> = [
   {
     path: "/demo",
     element: <Demo />,
+    loadData: Demo.getInitProps
   },
 ];
 

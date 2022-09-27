@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FC, Fragment } from "react";
 import { Helmet } from "react-helmet";
 import { connect } from "react-redux";
@@ -40,9 +41,15 @@ const mapStateToProps = (state: any) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     getDemoData: (data: string) => {
-      dispatch(getDemoData());
+      dispatch(getDemoData(data));
     },
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Demo);
+const storeDemo: any = connect(mapStateToProps, mapDispatchToProps)(Demo)
+
+storeDemo.getInitProps = (store: any, data: any) => {
+  return store.dispatch(getDemoData(data || "默认的数据哈哈哈"))
+}
+
+export default storeDemo;

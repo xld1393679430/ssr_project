@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 import childProcess from "child_process";
 import { renderToString } from "react-dom/server";
-import { Route, Routes } from "react-router-dom";
+import { matchRoutes, Route, Routes } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import { Helmet } from "react-helmet";
 import path from "path";
 import { Provider } from "react-redux";
-import routers from "@/router";
+import router from "@/router";
 import { serverStore } from "@/store";
 
 const bodyParser = require("body-parser");
@@ -25,35 +26,59 @@ app.post("/api/getDemoData", (req, res) => {
       data: req.body,
       status_code: 0,
     });
-  }, 1000)
+  }, 1000);
 });
 
 app.get("*", (req, res) => {
-  const content = renderToString(
-    <Provider store={serverStore}>
-      <StaticRouter location={req.path}>
-        <Routes>
-          {routers?.map((item, index) => {
-            return <Route {...item} key={index} />;
-          })}
-        </Routes>
-      </StaticRouter>{" "}
-    </Provider>
-  );
+  const routerMap = new Map();
+  router.forEach((item) => {
+    if (item.path && item.loadData) {
+      routerMap.set(item.path, item.loadData(serverStore));
+    }
+  });
 
-  const helmet = Helmet.renderStatic();
-  res.send(`
-        <html>
-            <head>
-              ${helmet.title.toString()}
-              ${helmet.meta.toString()}
-            </head>
-            <body>
-                <div id="root">${content}</div>
-                <script src="/index.js"></script>
-            </body>
-        </html>
-    `);
+  // 匹配当前路由的router
+  const matchedRoutes = matchRoutes(router, req.path) || [];
+
+  const promises: any = [];
+  matchedRoutes.forEach((item) => {
+    if (routerMap.has(item.pathname)) {
+      promises.push(routerMap.get(item.pathname));
+    }
+  });
+
+  Promise.all(promises).then((data) => {
+    const content = renderToString(
+      <Provider store={serverStore}>
+        <StaticRouter location={req.path}>
+          <Routes>
+            {router?.map((item, index) => {
+              return <Route {...item} key={index} />;
+            })}
+          </Routes>
+        </StaticRouter>
+      </Provider>
+    );
+
+    const helmet = Helmet.renderStatic();
+    res.send(`
+          <html>
+              <head>
+                ${helmet.title.toString()}
+                ${helmet.meta.toString()}
+              </head>
+              <body>
+                  <div id="root">${content}</div>
+                  <script>
+                    window.context = {
+                      state: ${JSON.stringify(serverStore.getState())}
+                    }
+                  </script>
+                  <script src="/index.js"></script>
+              </body>
+          </html>
+      `);
+  });
 });
 
 app.listen("3000", () => {
