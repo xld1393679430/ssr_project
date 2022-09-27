@@ -20,7 +20,7 @@ const Home = () => {
       </button>
 
       <div>
-        <a href="http://127.0.0.1:3000/demo">链接跳转</a>
+        <a href="/demo">链接跳转</a>
         <button
           onClick={(): void => {
             navigate("/demo");

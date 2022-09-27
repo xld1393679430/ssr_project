@@ -1,14 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { PORT, API } from '@/utils'
 
 // 这里不需要trycatch 否则extraReducers里捕获不到rejected状态
-const getDemoData = createAsyncThunk("demo/getData", async (content: string) => {
+const getDemoData = createAsyncThunk("demo/getDemoData", async (content: string) => {
   // try {
   // } catch (error) {
+  //   console.log(error, '--getDemoData-error--');
   //   return null;
   // }
-  const res = await axios.post("/api/getDemoData", {
+
+  const res = await axios.post(`${API}:${PORT}/api/getDemoData`, {
     content,
   });
   return res.data?.data?.content;

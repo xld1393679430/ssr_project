@@ -9,6 +9,7 @@ import path from "path";
 import { Provider } from "react-redux";
 import router from "@/router";
 import { serverStore } from "@/store";
+import { PORT, API } from '@/utils'
 
 const bodyParser = require("body-parser");
 const app = express();
@@ -47,7 +48,7 @@ app.get("*", (req, res) => {
     }
   });
 
-  Promise.all(promises).then((data) => {
+  Promise.all(promises).then(() => {
     const content = renderToString(
       <Provider store={serverStore}>
         <StaticRouter location={req.path}>
@@ -81,8 +82,10 @@ app.get("*", (req, res) => {
   });
 });
 
-app.listen("3000", () => {
-  // console.log("ssr-server listen on 3000");
+app.listen(PORT, () => {
+  console.log('====================================');
+  console.log(`${API}:${PORT}`);
+  console.log('====================================');
 });
 
-childProcess.exec("start http://127.0.0.1:3000");
+childProcess.exec(`---START ${API}:${PORT} ---`);
