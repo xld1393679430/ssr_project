@@ -7,9 +7,22 @@ import { Helmet } from "react-helmet";
 import path from 'path'
 import routers from '@/router'
 
+const bodyParser = require('body-parser')
 const app = express();
 
 app.use(express.static(path.resolve(process.cwd(), "client_build")))
+
+// 请求body解析
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// 启动一个post服务
+app.post("/api/getDemoData", (req, res) => {
+  res.send({
+    data: req.body,
+    status_code: 0,
+  })
+})
 
 app.get("*", (req, res) => {
   const content = renderToString(
@@ -25,7 +38,6 @@ app.get("*", (req, res) => {
   )
 
   const helmet = Helmet.renderStatic();
-  console.log(helmet.title, '---helmet.title')
   res.send(`
         <html>
             <head>
@@ -41,7 +53,7 @@ app.get("*", (req, res) => {
 });
 
 app.listen("3000", () => {
-  console.log("ssr-server listen on 3000");
+  // console.log("ssr-server listen on 3000");
 });
 
 childProcess.exec("start http://127.0.0.1:3000");
